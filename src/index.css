@@ -1,0 +1,263 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #141420;
+  --border: #26263a;
+  --f1-red: #e10600;
+  --text: #f5f5f7;
+  --text-dim: #9a9aa8;
+}
+
+/* Keyframes used by raw-CSS classes below (defined here so they exist
+   regardless of whether Tailwind emits the matching animate-* utility). */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@keyframes goldShimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+@keyframes shineSweep {
+  0% {
+    background-position: 120% 50%;
+  }
+  100% {
+    background-position: -120% 50%;
+  }
+}
+@keyframes starRight {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-260%);
+  }
+}
+@keyframes starLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg text-text font-body antialiased;
+    background-image: radial-gradient(
+      circle at 50% -10%,
+      rgba(225, 6, 0, 0.09),
+      transparent 45%
+    );
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+  }
+
+  ::selection {
+    background: var(--f1-red);
+    color: #fff;
+  }
+
+  /* Focus visibility for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--f1-red);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 6px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a3a55;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply backdrop-blur-md bg-black/40 border-b border-white/5;
+  }
+
+  .card-surface {
+    @apply bg-surface border border-border rounded-xl relative overflow-hidden;
+  }
+
+  /* thin red top-accent used across cards */
+  .accent-top::before {
+    content: '';
+    @apply absolute left-0 top-0 h-[3px] w-full;
+    background: linear-gradient(90deg, var(--f1-red), transparent 70%);
+  }
+
+  .skew-chip {
+    @apply inline-block px-3 py-1 -skew-x-6 text-xs font-semibold uppercase tracking-wide;
+  }
+
+  .skew-chip > span {
+    @apply inline-block skew-x-6;
+  }
+
+  .btn {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm
+      transition-all duration-200 focus-visible:outline-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-f1-red text-white hover:bg-f1-red-dim hover:shadow-[0_8px_30px_rgba(225,6,0,0.35)];
+  }
+
+  .btn-ghost {
+    @apply btn border border-border bg-white/5 text-text hover:bg-white/10;
+  }
+
+  .section-pad {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* skeleton shimmer */
+  .skeleton {
+    @apply relative overflow-hidden bg-surface-2 rounded-md;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
+  }
+
+  /* ShinyText — a sheen sweeps across the text */
+  .shiny-text {
+    background: linear-gradient(
+      110deg,
+      var(--text-dim) 0%,
+      var(--text-dim) 40%,
+      #ffffff 50%,
+      var(--text-dim) 60%,
+      var(--text-dim) 100%
+    );
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shineSweep var(--shine-speed, 4s) linear infinite;
+  }
+
+  /* StarBorder — light glints orbit a rounded border */
+  .star-border {
+    position: relative;
+    display: inline-block;
+    border-radius: 0.6rem;
+    padding: 1px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .star-border-inner {
+    position: relative;
+    z-index: 1;
+    border-radius: calc(0.6rem - 1px);
+    background: var(--surface);
+  }
+  .star-border-glow {
+    position: absolute;
+    z-index: 0;
+    width: 60%;
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    filter: blur(6px);
+    opacity: 0.7;
+    background: radial-gradient(circle, var(--star-color), transparent 60%);
+  }
+  .star-border-bottom {
+    bottom: -11px;
+    right: -20%;
+    animation: starRight var(--star-speed, 5s) linear infinite;
+  }
+  .star-border-top {
+    top: -11px;
+    left: -20%;
+    animation: starLeft var(--star-speed, 5s) linear infinite;
+  }
+}
+
+@layer utilities {
+  .noise {
+    position: relative;
+  }
+  .noise::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .text-gradient-red {
+    background: linear-gradient(90deg, #e10600, #ff5c52, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .gold-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 215, 0, 0.12),
+      rgba(255, 235, 150, 0.28),
+      rgba(255, 215, 0, 0.12)
+    );
+    background-size: 200% 100%;
+    animation: goldShimmer 3s ease infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
