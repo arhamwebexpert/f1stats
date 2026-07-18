@@ -1,19 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Hyperspeed from '../reactbits/Hyperspeed.jsx'
 import { prefersReducedMotion } from '../../lib/anim.js'
 
 // Fullscreen hero background. Lazy-mounts a looping video (public/hero.mp4)
 // after first paint so LCP isn't blocked, then fades it in once it can play.
-// On mobile or reduced-motion, falls back to the canvas Hyperspeed background
-// (zero video bytes). If the video fails to load, it also falls back.
+// Plays on mobile too (muted + playsInline satisfy autoplay policies). Falls
+// back to the canvas Hyperspeed background for reduced-motion or if the video
+// can't load/play (e.g. iOS Low Power Mode blocks autoplay).
 export default function VideoHero({ children }) {
   const [mounted, setMounted] = useState(false)
   const [videoOk, setVideoOk] = useState(true)
   const [ready, setReady] = useState(false)
+  const videoRef = useRef(null)
 
-  const isMobile =
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
-  const useFallback = isMobile || prefersReducedMotion() || !videoOk
+  const useFallback = prefersReducedMotion() || !videoOk
 
   useEffect(() => {
     // Defer mounting the video until after first paint.
@@ -21,10 +21,26 @@ export default function VideoHero({ children }) {
     return () => cancelAnimationFrame(id)
   }, [])
 
+  // Some mobile browsers won't honor the autoPlay attribute alone — nudge
+  // playback explicitly once the element is mounted. If the promise rejects
+  // (autoplay blocked), fall back to the animated background.
+  function tryPlay() {
+    const v = videoRef.current
+    if (!v) return
+    // React's `muted` attribute doesn't reliably set the DOM property, which
+    // mobile browsers require for muted autoplay — force it here.
+    v.muted = true
+    v.defaultMuted = true
+    const p = v.play?.()
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => setVideoOk(false))
+    }
+  }
+
   return (
     <section className="relative h-[100svh] overflow-hidden bg-bg">
-      {/* Hyperspeed shows on mobile/reduced-motion, and also underneath the
-          video while it buffers so there's never a black frame. */}
+      {/* Hyperspeed shows for reduced-motion, and also underneath the video
+          while it buffers so there's never a black frame. */}
       {(useFallback || !ready) && (
         <div className="absolute inset-0">
           <Hyperspeed />
@@ -33,6 +49,7 @@ export default function VideoHero({ children }) {
 
       {!useFallback && mounted && (
         <video
+          ref={videoRef}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
             ready ? 'opacity-100' : 'opacity-0'
           }`}
@@ -41,7 +58,11 @@ export default function VideoHero({ children }) {
           loop
           playsInline
           preload="auto"
-          onCanPlay={() => setReady(true)}
+          onLoadedMetadata={tryPlay}
+          onCanPlay={() => {
+            setReady(true)
+            tryPlay()
+          }}
           onError={() => setVideoOk(false)}
         >
           <source src="/hero.mp4" type="video/mp4" />
