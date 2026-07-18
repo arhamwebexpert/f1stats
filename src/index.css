@@ -70,6 +70,10 @@
     );
     background-attachment: fixed;
     min-height: 100vh;
+    /* Prevent skewed/animated elements (route wipe, skewed titles) from
+       spilling and creating a horizontal scrollbar on mobile. `clip` keeps
+       position: sticky working, unlike overflow-x: hidden. */
+    overflow-x: clip;
   }
 
   h1,
@@ -147,6 +151,11 @@
 
   .section-pad {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Extend the mobile tab bar over the iOS home-indicator safe area. */
+  .mobile-dock > div {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* skeleton shimmer */

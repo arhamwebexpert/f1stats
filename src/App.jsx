@@ -10,6 +10,7 @@ import { apiGet } from './lib/api.js'
 
 // Route-level code splitting.
 const Home = lazy(() => import('./pages/Home.jsx'))
+const Live = lazy(() => import('./pages/Live.jsx'))
 const Drivers = lazy(() => import('./pages/Drivers.jsx'))
 const DriverDetail = lazy(() => import('./pages/DriverDetail.jsx'))
 const Teams = lazy(() => import('./pages/Teams.jsx'))
@@ -55,6 +56,7 @@ export default function App() {
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/live" element={<Live />} />
               <Route path="/drivers" element={<Drivers />} />
               <Route path="/drivers/:driverId" element={<DriverDetail />} />
               <Route path="/teams" element={<Teams />} />

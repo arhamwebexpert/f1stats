@@ -1,9 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
-import { Flag, Users, Trophy, Calendar, GitCompareArrows, LayoutGrid } from 'lucide-react'
+import { Flag, Users, Trophy, Calendar, GitCompareArrows, LayoutGrid, Radio } from 'lucide-react'
 import { CURRENT_SEASON } from '../../lib/queryClient.js'
+import { useLatestSession, sessionState } from '../../hooks/useOpenF1.js'
 
 const LINKS = [
+  { to: '/live', label: 'Live', icon: Radio, match: '/live' },
   { to: '/drivers', label: 'Drivers', icon: Users, match: '/drivers' },
   { to: '/teams', label: 'Teams', icon: LayoutGrid, match: '/teams' },
   { to: `/standings/${CURRENT_SEASON}`, label: 'Standings', icon: Trophy, match: '/standings' },
@@ -20,6 +22,10 @@ export default function Navbar() {
   const { pathname } = useLocation()
   const listRef = useRef(null)
   const [pill, setPill] = useState({ left: 0, width: 0, visible: false })
+
+  // Pulse the Live link when a session is currently running.
+  const { data: latestSession } = useLatestSession()
+  const isLive = sessionState(latestSession) === 'live'
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -84,7 +90,15 @@ export default function Navbar() {
                   }`
                 }}
               >
-                {label}
+                <span className="relative">
+                  {label}
+                  {to === '/live' && isLive && (
+                    <span className="absolute -right-2.5 -top-1 flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-f1-red" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-f1-red" />
+                    </span>
+                  )}
+                </span>
               </NavLink>
             ))}
           </div>
@@ -95,21 +109,29 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile bottom dock */}
-      <nav className="fixed inset-x-0 bottom-0 z-50 md:hidden">
-        <div className="glass mx-3 mb-3 flex items-center justify-around rounded-2xl border border-white/10 px-2 py-2">
+      {/* Mobile bottom tab bar (full-width so all items fit; safe-area aware) */}
+      <nav className="mobile-dock fixed inset-x-0 bottom-0 z-50 md:hidden">
+        <div className="glass flex items-stretch justify-around border-t border-white/10 px-0.5">
           {LINKS.map(({ to, label, icon: Icon, match }) => {
             const active = pathname.startsWith(match)
             return (
               <NavLink
                 key={to}
                 to={to}
-                className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-[10px] font-semibold transition-all ${
-                  active ? 'scale-105 text-f1-red' : 'text-text-dim'
+                className={`relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[9px] font-semibold leading-none transition-colors ${
+                  active ? 'text-f1-red' : 'text-text-dim'
                 }`}
               >
-                <Icon size={20} />
-                {label}
+                <span className="relative">
+                  <Icon size={19} />
+                  {to === '/live' && isLive && (
+                    <span className="absolute -right-1 -top-0.5 h-2 w-2 animate-ping rounded-full bg-f1-red" />
+                  )}
+                  {active && (
+                    <span className="absolute -bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-f1-red" />
+                  )}
+                </span>
+                <span className="whitespace-nowrap">{label}</span>
               </NavLink>
             )
           })}

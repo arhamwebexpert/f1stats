@@ -88,20 +88,20 @@ export default function DriverDetail() {
           ) : (
             driver && (
               <div className="flex flex-wrap items-end justify-between gap-4">
-                <div className="flex items-end gap-5">
+                <div className="flex items-end gap-3 sm:gap-5">
                   <DriverAvatar
                     driver={driver}
                     accent={accent}
                     eager
-                    initialsClassName="text-4xl"
-                    className="h-28 w-28 shrink-0 border-2 border-white/10 shadow-xl shadow-black/40 sm:h-36 sm:w-36"
+                    initialsClassName="text-3xl sm:text-4xl"
+                    className="h-20 w-20 shrink-0 border-2 border-white/10 shadow-xl shadow-black/40 sm:h-36 sm:w-36"
                   />
-                  <div>
-                  <p className="font-display text-lg text-text-dim">
+                  <div className="min-w-0">
+                  <p className="font-display text-base text-text-dim sm:text-lg">
                     {flag(driver.nationality)} {driver.givenName}
                   </p>
                   <h1
-                    className="font-display text-5xl font-900 uppercase leading-[0.9] sm:text-7xl"
+                    className="font-display text-4xl font-900 uppercase leading-[0.9] sm:text-7xl"
                     style={{ transform: 'skewX(-6deg)' }}
                   >
                     {driver.familyName}
@@ -131,7 +131,7 @@ export default function DriverDetail() {
                 </div>
                 {driver.permanentNumber && (
                   <span
-                    className="font-display text-7xl font-900 leading-none opacity-30 sm:text-8xl"
+                    className="font-display text-5xl font-900 leading-none opacity-30 sm:text-8xl"
                     style={{ color: accent }}
                   >
                     #{driver.permanentNumber}
@@ -157,7 +157,7 @@ export default function DriverDetail() {
             <RaceLoader label="Timing the laps…" />
           </div>
         ) : (
-          <div className="-mt-6 grid grid-cols-3 gap-3 sm:grid-cols-6">
+          <div className="-mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {statTiles.map((t) => (
               <StatCounter
                 key={t.label}
