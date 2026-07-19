@@ -24,7 +24,7 @@ export default function LiveTimingBoard({ results, drivers, sessionType }) {
             <th scope="col" className="px-4 py-3">Driver</th>
             <th scope="col" className="px-4 py-3 text-center">Laps</th>
             <th scope="col" className="px-4 py-3 text-right">
-              {isRace ? 'Gap' : 'Gap to leader'}
+              {isRace ? 'Gap to leader' : 'Best lap'}
             </th>
             <th scope="col" className="px-4 py-3 text-right">Status</th>
           </tr>
@@ -60,7 +60,7 @@ export default function LiveTimingBoard({ results, drivers, sessionType }) {
                   {r.number_of_laps ?? '—'}
                 </td>
                 <td className="px-4 py-3 text-right font-display tabular-nums">
-                  {formatGap(r)}
+                  {isRace ? formatGap(r) : formatLapTime(bestLap(r))}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <StatusBadge result={r} />
@@ -112,8 +112,35 @@ function StatusBadge({ result }) {
 
 function formatGap(r) {
   if (r.position === 1) return 'Leader'
-  const g = r.gap_to_leader
+  let g = r.gap_to_leader
+  if (Array.isArray(g)) g = lastFinite(g) // defensive
   if (g == null || g === '') return '—'
   if (typeof g === 'string') return g // e.g. "+1 LAP"
-  return `+${Number(g).toFixed(3)}s`
+  const n = Number(g)
+  if (!Number.isFinite(n)) return '—'
+  return `+${n.toFixed(3)}s`
+}
+
+// Best (fastest) lap time for a driver. `duration` is a scalar in
+// practice/race and an array of [Q1, Q2, Q3] times in qualifying.
+function bestLap(r) {
+  let d = r.duration
+  if (Array.isArray(d)) {
+    const finite = d.filter((v) => typeof v === 'number' && Number.isFinite(v))
+    d = finite.length ? Math.min(...finite) : null
+  }
+  return d
+}
+
+function formatLapTime(sec) {
+  const n = Number(sec)
+  if (sec == null || !Number.isFinite(n) || n <= 0) return '—'
+  const mins = Math.floor(n / 60)
+  const secs = (n % 60).toFixed(3).padStart(6, '0')
+  return mins > 0 ? `${mins}:${secs}` : `${secs}s`
+}
+
+function lastFinite(arr) {
+  const finite = arr.filter((v) => typeof v === 'number' && Number.isFinite(v))
+  return finite.length ? finite[finite.length - 1] : null
 }
